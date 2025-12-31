@@ -11,16 +11,19 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-re = { path = "../../retrofire/core", package = "retrofire-core", features = ["libm"] }
-re-front = { path = "../../retrofire/front", package = "retrofire-front", features = ["wasm"] }
-
 wasm-bindgen = "0.2.84"
-
-# The `console_error_panic_hook` crate provides better debugging of panics by
-# logging them with `console.error`. This is great for development, but requires
-# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
-# code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
+
+[dependencies.re]
+path = "../../retrofire/core"
+package = "retrofire-core"
+default-features = false
+features =["libm"]
+
+[dependencies.re-front]
+path = "../../retrofire/front"
+package = "retrofire-front"
+features = ["wasm"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

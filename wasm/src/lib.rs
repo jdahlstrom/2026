@@ -5,7 +5,6 @@ extern crate core;
 
 mod utils;
 
-
 use alloc::{vec, vec::Vec};
 use core::iter::zip;
 use core::ops::ControlFlow::Continue;
@@ -17,16 +16,18 @@ use re::prelude::*;
 use re::math::rand::{self, Distrib, VectorsOnUnitDisk};
 use re::render::tex::{Atlas, Layout, SamplerClamp};
 use re::render::{render, shader, Model, View};
-use re::util::pnm::read_pnm;
+use re::util::pnm::parse_pnm;
 
 use re_front::wasm::Window;
 
 #[wasm_bindgen(start)]
 fn main() {
-    let res = (1024, 768);
+    utils::set_panic_hook();
+
+    let res = (1024, 1024);
     let mut win = Window::new(res).unwrap();
 
-    let spark_tex = Buf2::new_with((64, 64), |x, y| {
+    let spark_tex: Texture<_> = Buf2::new_with((64, 64), |x, y| {
         let x = x as f32 / 32.0 - 1.0;
         let y = y as f32 / 32.0 - 1.0;
         let d = (x * x + y * y) * 1.5;
@@ -35,8 +36,9 @@ fn main() {
     })
         .into();
 
+
     static FONT: &[u8] = include_bytes!("../../assets/font_16x24.pbm");
-    let font = read_pnm(FONT).unwrap();
+    let font = parse_pnm(FONT.iter().copied()).unwrap();
     let (cw, ch) = (font.width() / 16, font.height() / 16);
     let font = Atlas::new(Layout::Grid { sub_dims: (cw, ch) }, font.into());
 
@@ -47,7 +49,7 @@ fn main() {
         buf.slice_mut(((x * cw)..(x + 1) * cw, 0..ch))
             .copy_from(*font.get(c as u32).data());
     }
-    let text = buf.into();
+    let text: Texture<_> = buf.into();
 
     let tris = [Tri([0, 1, 2]), Tri([0, 2, 3])];
     let verts = [
@@ -62,7 +64,7 @@ fn main() {
         perspective(1.0, win.dims.0 as f32 / win.dims.1 as f32, 0.1..1000.0);
     let to_screen = viewport(pt2(0, res.1)..pt2(res.0, 0));
 
-    let mut rng = rand::DefaultRng::from_time();
+    let mut rng = rand::DefaultRng::default();
 
     const N: usize = 1000;
 
@@ -234,7 +236,7 @@ fn main() {
         let mv: Mat4<Model, View> = translate(vec3(0.0, -0.5, 0.8 * t.sin()))
             .then(&rotate_y(rads(0.5 * (t * 0.59).sin())))
             .then(&rotate_z(rads(0.5 * (t * 1.13).sin())))
-            .then(&translate(vec3(0.0, -1.0, 5.0)))
+            .then(&translate(vec3(0.0, -1.0, 3.0)))
             .to();
         let mvp: ProjMat3<Model> = mv.then(&proj);
         render(
