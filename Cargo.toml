@@ -1,9 +1,12 @@
 [package]
-name = "yule"
+name = "uv-2026"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 re = { path = "../retrofire/core", package = "retrofire-core", features = ["std"] }
 re-front = { path = "../retrofire/front", package = "retrofire-front", features = ["minifb"] }
 minifb = { version = "0.27.0" }
+
+[profile.release]
+lto = "thin"
